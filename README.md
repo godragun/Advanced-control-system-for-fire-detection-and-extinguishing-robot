@@ -2,38 +2,44 @@
 
 ![firearm robot](firearm.jpeg)
 
-This document describes how to wire an L298N / L293D motor driver to an ESP32, the functions of each relevant pin on the driver, and example ESP32 code (Arduino API) to control two DC motors (left and[...] 
+This document describes how to wire an L298N / L293D motor driver to an ESP32, the functions of each relevant pin on the driver, and example ESP32 code (Arduino API) to control two DC motors (left and[...]
 
 ---
 
 ## Wiring / Pin mapping
 
-Motor Driver (L298N / L293D) to ESP32:
+Below are compact tables showing the connections between the motor driver, the ESP32, the motors and the power supply. Use these to quickly match wires.
 
-- ENA (Speed Control Motor A)  ESP32 Pin 13
-- IN1 (Direction Motor A)  ESP32 Pin 14
-- IN2 (Direction Motor A)  ESP32 Pin 15
-- IN3 (Direction Motor B)  ESP32 Pin 18
-- IN4 (Direction Motor B)  ESP32 Pin 19
-- ENB (Speed Control Motor B)  ESP32 Pin 12
+Motor driver pins -> ESP32
+| Motor Driver Pin | Function / Purpose                 | ESP32 Pin | Notes |
+| --- | --- | ---: | --- |
+| ENA | Speed control for Motor A (PWM input) | 13 | Use LEDC PWM channel on ESP32 |
+| IN1 | Direction input Motor A (IN1)        | 14 | Digital output |
+| IN2 | Direction input Motor A (IN2)        | 15 | Digital output |
+| IN3 | Direction input Motor B (IN3)        | 18 | Digital output |
+| IN4 | Direction input Motor B (IN4)        | 19 | Digital output |
+| ENB | Speed control for Motor B (PWM input) | 12 | Use LEDC PWM channel on ESP32 |
+| OUT1 | Motor A + output (driver -> motor)   | — | Connect to Motor A+ |
+| OUT2 | Motor A - output (driver -> motor)   | — | Connect to Motor A- |
+| OUT3 | Motor B + output (driver -> motor)   | — | Connect to Motor B+ |
+| OUT4 | Motor B - output (driver -> motor)   | — | Connect to Motor B- |
 
-Motor connections:
+Motor connections
+| Motor | Driver output (+) | Driver output (-) |
+| --- | ---: | ---: |
+| Motor A (Left)  | OUT1 | OUT2 |
+| Motor B (Right) | OUT3 | OUT4 |
 
-- Motor A (Left Motor):
-  - Motor A+  OUT1
-  - Motor A-  OUT2
+Power connections
+| Supply / Signal | Connect to | Notes / Warnings |
+| --- | --- | --- |
+| 12V battery positive | Motor driver 12V input (VMS / +12V) | Provides motor supply — ensure battery can supply stall current |
+| 12V battery negative | Motor driver GND | Common ground with ESP32 and battery negative |
+| Motor driver GND | ESP32 GND | All grounds must be common |
+| Motor driver 5V output (if present) | ESP32 Vin (optional) | Fit regulator jumper on many L298N boards only if you want driver to power ESP32 and regulator is stable; otherwise use a separate 5V regulator for ESP32 |
+| (Optional) Fuse / current-limiter | In series with 12V positive | Recommended for safety |
 
-- Motor B (Right Motor):
-  - Motor B+  OUT3
-  - Motor B-  OUT4
-
-Power connections:
-
-- 12V battery positive  Motor driver 12V input (VMS / +12V)
-- ESP32 Vin  Motor driver 5V output (or supply the ESP32 from a separate regulated 5V)
-- All grounds connected together (battery negative, motor driver GND, ESP32 GND)
-
-Note: Many L298N boards include a jumper to connect the motor-driver's on-board 5V regulator to the 5V output pin. Fit that jumper only if you want the driver to power the ESP32 and the regulator is r[...] 
+Note: Many L298N boards include a jumper to connect the motor-driver's on-board 5V regulator to the 5V output pin. Fit that jumper only if you want the driver to power the ESP32 and the regulator is rated for the load; otherwise supply the ESP32 from a separate 5V regulator or USB.
 
 ---
 
@@ -47,16 +53,16 @@ Note: Many L298N boards include a jumper to connect the motor-driver's on-board 
 - IN1 / IN2 (Motor A direction inputs):
   - Digital inputs that determine rotation direction for Motor A.
   - Typical truth table:
-    - IN1 HIGH, IN2 LOW   Motor A forward
-    - IN1 LOW, IN2 HIGH   Motor A backward
-    - IN1 LOW, IN2 LOW    Motor A coast/stop (driver-dependent)
-    - IN1 HIGH, IN2 HIGH  Motor A brake (driver-dependent)
+    - IN1 HIGH, IN2 LOW  → Motor A forward
+    - IN1 LOW, IN2 HIGH  → Motor A backward
+    - IN1 LOW, IN2 LOW   → Motor A coast/stop (driver-dependent)
+    - IN1 HIGH, IN2 HIGH → Motor A brake (driver-dependent)
 
 - IN3 / IN4 (Motor B direction inputs):
   - Same as IN1/IN2 but for Motor B.
 
 - OUT1 / OUT2 / OUT3 / OUT4:
-  - These are the motor outputs from the driver  wire your motors to these.
+  - These are the motor outputs from the driver — wire your motors to these.
 
 - Power (12V input):
   - The motors' supply. Make sure the battery/supply can provide the stall current of your motors.
@@ -77,7 +83,7 @@ Safety & best practice:
 
 ## Example: ESP32 (Arduino core) code
 
-This example uses LEDC PWM on the ESP32 to control motor speed via ENA/ENB and digital outputs for IN pins to set direction. PWM values use 8-bit resolution (0-255). Adjust PWM frequency and resolutio[...] 
+This example uses LEDC PWM on the ESP32 to control motor speed via ENA/ENB and digital outputs for IN pins to set direction. PWM values use 8-bit resolution (0-255). Adjust PWM frequency and resolutio[...]
 
 ```cpp
 // ESP32 pin definitions
@@ -181,7 +187,7 @@ void loop() {
 Notes about the example:
 - If motors spin in the opposite direction to what you expect, invert the sign convention in setMotor functions or swap the motor wires (A+/A-) or (B+/B-).
 - The ESP32 PWM range and API allow many resolution/frequency choices. Use a frequency that is inaudible for your motors (several kHz to tens of kHz).
-- Some cheap L298N modules invert PWM or tie EN pins differentlyverify behavior on your board.
+- Some cheap L298N modules invert PWM or tie EN pins differently—verify behavior on your board.
 
 ---
 
@@ -192,11 +198,5 @@ Notes about the example:
 - Add current sensing (shunt + ADC) if you need to monitor motor load / stall conditions.
 - Add a hall encoder or rotary encoder to implement closed-loop speed or position control.
 
----
 
-If you want, I can:
-- Produce a PlatformIO or native ESP-IDF example instead of Arduino-style code.
-- Create a simple wiring diagram image (SVG) showing the connections.
-- Tailor the example to a specific motor driver board variant (L298N module vs raw IC vs L293D breakout).
 
-Tell me which format you'd like next.
