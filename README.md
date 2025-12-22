@@ -1,6 +1,6 @@
 # Advanced control system for fire detection and extinguishing robot
 
-![firearm robot](files/firearm.jpeg)
+![firearm robot](firearm.jpeg)
 
 This document describes how to wire an L298N / L293D motor driver to an ESP32, the functions of each relevant pin on the driver, and example ESP32 code (Arduino API) to control two DC motors (left and[...] 
 
