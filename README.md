@@ -1,6 +1,8 @@
 # Advanced control system for fire detection and extinguishing robot
 
-This document describes how to wire an L298N / L293D motor driver to an ESP32, the functions of each relevant pin on the driver, and example ESP32 code (Arduino API) to control two DC motors (left and right) with speed and direction control.
+![firearm robot](files/firearm.jpeg)
+
+This document describes how to wire an L298N / L293D motor driver to an ESP32, the functions of each relevant pin on the driver, and example ESP32 code (Arduino API) to control two DC motors (left and[...] 
 
 ---
 
@@ -8,30 +10,30 @@ This document describes how to wire an L298N / L293D motor driver to an ESP32, t
 
 Motor Driver (L298N / L293D) to ESP32:
 
-- ENA (Speed Control Motor A) → ESP32 Pin 13
-- IN1 (Direction Motor A) → ESP32 Pin 14
-- IN2 (Direction Motor A) → ESP32 Pin 15
-- IN3 (Direction Motor B) → ESP32 Pin 18
-- IN4 (Direction Motor B) → ESP32 Pin 19
-- ENB (Speed Control Motor B) → ESP32 Pin 12
+- ENA (Speed Control Motor A)  ESP32 Pin 13
+- IN1 (Direction Motor A)  ESP32 Pin 14
+- IN2 (Direction Motor A)  ESP32 Pin 15
+- IN3 (Direction Motor B)  ESP32 Pin 18
+- IN4 (Direction Motor B)  ESP32 Pin 19
+- ENB (Speed Control Motor B)  ESP32 Pin 12
 
 Motor connections:
 
 - Motor A (Left Motor):
-  - Motor A+ → OUT1
-  - Motor A- → OUT2
+  - Motor A+  OUT1
+  - Motor A-  OUT2
 
 - Motor B (Right Motor):
-  - Motor B+ → OUT3
-  - Motor B- → OUT4
+  - Motor B+  OUT3
+  - Motor B-  OUT4
 
 Power connections:
 
-- 12V battery positive → Motor driver 12V input (VMS / +12V)
-- ESP32 Vin → Motor driver 5V output (or supply the ESP32 from a separate regulated 5V)
+- 12V battery positive  Motor driver 12V input (VMS / +12V)
+- ESP32 Vin  Motor driver 5V output (or supply the ESP32 from a separate regulated 5V)
 - All grounds connected together (battery negative, motor driver GND, ESP32 GND)
 
-Note: Many L298N boards include a jumper to connect the motor-driver's on-board 5V regulator to the 5V output pin. Fit that jumper only if you want the driver to power the ESP32 and the regulator is rated for the ESP32 current draw. If using a separate 5V regulator for the ESP32, remove the jumper to avoid back-powering issues.
+Note: Many L298N boards include a jumper to connect the motor-driver's on-board 5V regulator to the 5V output pin. Fit that jumper only if you want the driver to power the ESP32 and the regulator is r[...] 
 
 ---
 
@@ -45,16 +47,16 @@ Note: Many L298N boards include a jumper to connect the motor-driver's on-board 
 - IN1 / IN2 (Motor A direction inputs):
   - Digital inputs that determine rotation direction for Motor A.
   - Typical truth table:
-    - IN1 HIGH, IN2 LOW  → Motor A forward
-    - IN1 LOW, IN2 HIGH  → Motor A backward
-    - IN1 LOW, IN2 LOW   → Motor A coast/stop (driver-dependent)
-    - IN1 HIGH, IN2 HIGH → Motor A brake (driver-dependent)
+    - IN1 HIGH, IN2 LOW   Motor A forward
+    - IN1 LOW, IN2 HIGH   Motor A backward
+    - IN1 LOW, IN2 LOW    Motor A coast/stop (driver-dependent)
+    - IN1 HIGH, IN2 HIGH  Motor A brake (driver-dependent)
 
 - IN3 / IN4 (Motor B direction inputs):
   - Same as IN1/IN2 but for Motor B.
 
 - OUT1 / OUT2 / OUT3 / OUT4:
-  - These are the motor outputs from the driver — wire your motors to these.
+  - These are the motor outputs from the driver  wire your motors to these.
 
 - Power (12V input):
   - The motors' supply. Make sure the battery/supply can provide the stall current of your motors.
@@ -75,7 +77,7 @@ Safety & best practice:
 
 ## Example: ESP32 (Arduino core) code
 
-This example uses LEDC PWM on the ESP32 to control motor speed via ENA/ENB and digital outputs for IN pins to set direction. PWM values use 8-bit resolution (0-255). Adjust PWM frequency and resolution as desired.
+This example uses LEDC PWM on the ESP32 to control motor speed via ENA/ENB and digital outputs for IN pins to set direction. PWM values use 8-bit resolution (0-255). Adjust PWM frequency and resolutio[...] 
 
 ```cpp
 // ESP32 pin definitions
@@ -177,9 +179,9 @@ void loop() {
 ```
 
 Notes about the example:
-- If motors spin in the opposite direction to what you expect, invert the sign convention in setMotor functions or swap the motor wires (A+/A- or B+/B-).
+- If motors spin in the opposite direction to what you expect, invert the sign convention in setMotor functions or swap the motor wires (A+/A-) or (B+/B-).
 - The ESP32 PWM range and API allow many resolution/frequency choices. Use a frequency that is inaudible for your motors (several kHz to tens of kHz).
-- Some cheap L298N modules invert PWM or tie EN pins differently—verify behavior on your board.
+- Some cheap L298N modules invert PWM or tie EN pins differentlyverify behavior on your board.
 
 ---
 
